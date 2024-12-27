@@ -32,7 +32,7 @@ public class TranscribeController {
 			@RequestParam String fileName,
 			@RequestPart MultipartFile file) throws IOException {
 		LOGGER.info("transcribing: {}", file.getOriginalFilename());
-		return transcriberInput.getTranscription(file);
+		return transcriberInput.getTranscription(file.getInputStream());
 	}
 
 }

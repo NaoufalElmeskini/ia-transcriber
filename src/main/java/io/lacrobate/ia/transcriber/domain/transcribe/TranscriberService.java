@@ -4,10 +4,12 @@ import io.lacrobate.ia.transcriber.domain.file.FileUtils;
 import io.lacrobate.ia.transcriber.domain.port.TranscriberInput;
 import io.lacrobate.ia.transcriber.domain.port.TranscriberOutput;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,6 +19,7 @@ import static io.lacrobate.ia.transcriber.domain.file.FileUtils.createTranscript
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class TranscriberService implements TranscriberInput {
 
 	private final TranscriberOutput output;
@@ -36,6 +39,16 @@ public class TranscriberService implements TranscriberInput {
 			return output.transcribe(audioFilePath.toString());
 		}
 		return "";
+	}
+
+	@Override
+	public String getTranscription(InputStream contentStream) {
+		log.info("getTranscription...");
+		try {
+			return output.transcribe(contentStream);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,6 +83,21 @@ public class WhisperAdapter implements TranscriberOutput {
                 fileName.lastIndexOf("/") + 1);
         FileUtils.writeTextToFile(transcription,
                 fileNameWithoutPath.replace(".wav", ".txt"));
+        return transcription;
+    }
+
+
+    @Override
+    public String transcribe(InputStream contentStream) throws IOException {
+        // Collect the transcriptions of each chunk
+        log.info("UglyWhisperAdapter.transcribe");
+        String transcription = "";
+
+        // First prompt is the word list
+        String prompt = WORD_LIST;
+
+        transcription = client.transcribeChunk(prompt, contentStream);
+
         return transcription;
     }
 
