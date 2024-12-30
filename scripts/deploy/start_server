@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "starting server"
+java -jar /home/ec2-user/moved-aws-ec2-spring-api-0.1.jar
+
+

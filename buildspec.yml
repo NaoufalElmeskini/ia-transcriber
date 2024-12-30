@@ -1,3 +1,4 @@
+#CodeBuild main file
 version: 0.1
 
 phases:
@@ -13,3 +14,5 @@ phases:
 artifacts:
   files:
     - target/aws-ec2-spring-api-0.1.jar
+    - scripts/deploy/*
+    - appspec.yml
