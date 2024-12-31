@@ -3,12 +3,9 @@ version: 0.0
 os: linux
 files:
   - source: target/aws-ec2-spring-api-0.1.jar
-    destination: /home/ec2-user/moved-aws-ec2-spring-api-0.1.jar
+    destination: /home/ec2-user/
 hooks:
-  BeforeInstall:
-    - location: scripts/deploy/install_dependencies
-      timeout: 300
-      runas: root
+#  BeforeInstall:
   AfterInstall:
     - location: scripts/deploy/start_server
       timeout: 300
