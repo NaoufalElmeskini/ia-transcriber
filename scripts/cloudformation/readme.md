@@ -16,7 +16,7 @@ aws cloudformation create-stack --stack-name someUsStack2
 
 ### display stack
 ````powershell
-aws cloudformation describe-stacks --stack-name someStack
+aws cloudformation describe-stacks --stack-name someStack 
 ````
 
 ### update stack:
