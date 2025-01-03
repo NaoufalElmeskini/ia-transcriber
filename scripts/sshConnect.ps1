@@ -7,12 +7,12 @@
 # a simple conversion is necessary to create one from an other (probably .pem to .ppk)
 ####################################
 param(
-    [string]$certificate,
+    [string]$pemCertificate,
     [string]$server
 )
 
-if (!$certificate) {
-    Write-Host "/!\ you didn't insert certificate"
+if (!$pemCertificate) {
+    Write-Host "/!\ you didn't insert .pem certificate"
     exit
 }
 if (!$server) {
@@ -20,6 +20,6 @@ if (!$server) {
     exit
 }
 
-echo "certificate : " $certificate
+echo "certificate : " $pemCertificate
 
-ssh -i $certificate ec2-user@$server
+ssh -i $pemCertificate ec2-user@$server

@@ -1,26 +1,31 @@
-![Spring](https://img.shields.io/badge/-Spring-13aa52?style=for-the-badge&logo=spring&logoColor=white)
+![Spring](https://img.shields.io/badge/-Aws-13aa52?style=for-the-badge&logo=aws&logoColor=white)
 ![Spring](https://img.shields.io/badge/-Boot-13aa52?style=for-the-badge&logo=springboot&logoColor=white)
 
+## Introduction
+Exemple de projet java integré avec la galaxie AWS.
 
-# À propos
-
-IATranscriber est un backend API qui permet la transcription d'un fichier audio, à l'aide un d'un modèle de langage de type speech-to-text. 
-
-Plusieurs APIs fournissent un service speech-to-text ([notemment Whisper](https://platform.openai.com/docs/guides/speech-to-text)), mais ces services requierent plusieurs conditions concernant les fichiers en entrée (format, taille, encodage...) et de [prompt](https://en.wikipedia.org/wiki/Prompt_engineering) accompagnant le fichier.
-
-Cette application a pour but de résoudre ces problèmes en proposant une interface minimaliste.
+Services Aws : EC2, S3, CodeBuild, CodeDEploy, CloudFormation.
 
 ---
-# Fonctionnalités
-- xxx
+# Tester :
+(à venir)
 
 --- 
-## Demarrer :
+## Builder :
+(à venir)
 
 ---
 ## Deployer :
+(à venir)
 
 ---
-## Tester
+## Template CloudFormation
+
+ce projet contient un [template CloudFormation](https://en.wikipedia.org/wiki/AWS_CloudFormation) qui decrit et automatise la creation des ressources AWS.
+
+c'est un [fichier IaC](https://fr.wikipedia.org/wiki/Infrastructure_as_code) qui simplifie la description et automatise la création des ressources AWS. 
+
+ce [template](scripts/cloudformation) crée une instance ec2, lui donne les configuration de securité et prépare un environnement java dessus.
+il contient aussi la section de build (codeBuild), et de deploiement automatisé (codeDeploy).
 
 ## annexe :

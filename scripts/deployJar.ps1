@@ -5,12 +5,12 @@
 # a simple conversion is necessary to create one from an other (probably .pem to .ppk)
 ####################################
 param(
-    [string]$certificate,
+    [string]$ppkCertificate,
     [string]$server
 )
 
-if (!$certificate) {
-    Write-Host "/!\ you didn't insert certificate"
+if (!$ppkCertificate) {
+    Write-Host "/!\ you didn't insert .ppk certificate"
     exit
 }
 if (!$server) {
@@ -19,4 +19,4 @@ if (!$server) {
 }
 
 mvn clean package -DskipTests --file ..\pom.xml
-.\pscp.exe -scp -i $certificate ../target/*.jar ec2-user@$($server):~
+.\pscp.exe -scp -i $ppkCertificate ../target/*.jar ec2-user@$($server):~

@@ -5,13 +5,13 @@
 # a simple conversion is necessary to create one from an other (probably .pem to .ppk)
 ####################################
 param(
-    [string]$certificate,
+    [string]$ppkCertificate,
     [string]$file,
     [string]$server
 )
 
-if (!$certificate) {
-    Write-Host "/!\ you didn't insert certificate"
+if (!$ppkCertificate) {
+    Write-Host "/!\ you didn't insert .ppk certificate"
     exit
 }
 if (!$file) {
@@ -24,4 +24,4 @@ if (!$server) {
 }
 
 echo "deploying to : " ec2-user@$($server)
-.\pscp.exe -scp -i $certificate $file ec2-user@$($server):~
+.\pscp.exe -scp -i $ppkCertificate $file ec2-user@$($server):~
