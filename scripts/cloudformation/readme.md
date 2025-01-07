@@ -9,8 +9,8 @@ cloudformation logs in EC2 :
 
 ### create stack :
 ````powershell
-aws cloudformation create-stack --stack-name someUsStack2
-#    --template-body file://C:\Users\neal_\Desktop\local-projects\software\aws-ec2-spring-api-ex\scripts\cloudformation\ec2Instance.yml
+aws cloudformation create-stack --stack-name someUsStack
+#    --template-body file://C:\path_to_repo\scripts\cloudformation\ec2Instance.yml
 #    --parameters ParameterKey=SecurityGroupDescription,ParameterValue=uneDescription
 #    --capabilities CAPABILITY_IAM
 ````
