@@ -8,11 +8,11 @@
 		<version>3.3.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>io.lacrobate.ec2</groupId>
+	<groupId>io.lacrobate.ia</groupId>
 	<artifactId>aws-ec2-spring-api</artifactId>
 	<version>0.1</version>
-	<name>spring-transcriber-api</name>
-	<description>Demo project for Spring Boot</description>
+	<name>ia-transcriber-api</name>
+	<description>Learning project for Spring Boot API with AWS and IA</description>
 	<url/>
 	<licenses>
 		<license/>

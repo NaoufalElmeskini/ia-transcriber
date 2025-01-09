@@ -3,6 +3,7 @@ package io.lacrobate.ia.transcriber.infrastructure;
 import io.lacrobate.ia.transcriber.domain.file.FileUtils;
 import io.lacrobate.ia.transcriber.domain.file.WavFileSplitter;
 import io.lacrobate.ia.transcriber.domain.port.TranscriberOutput;
+import io.lacrobate.ia.transcriber.domain.transcribe.Transcription;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,57 +35,54 @@ import java.util.List;
 @AllArgsConstructor
 @Slf4j
 public class WhisperAdapter implements TranscriberOutput {
-    public final static int MAX_ALLOWED_SIZE = 25 * 1024 * 1024;
-    public final static int MAX_CHUNK_SIZE_BYTES = 20 * 1024 * 1024;
+	public final static int MAX_ALLOWED_SIZE = 25 * 1024 * 1024;
+	public final static int MAX_CHUNK_SIZE_BYTES = 20 * 1024 * 1024;
 
-    public static final String WORD_LIST = String.join(", ",
-            List.of("Kousen", "GPT-3", "GPT-4", "DALL-E",
-                    "Midjourney", "AssertJ", "Mockito", "JUnit", "Java", "Kotlin", "Groovy", "Scala",
-                    "IOException", "RuntimeException", "UncheckedIOException", "UnsupportedAudioFileException",
-                    "assertThrows", "assertTrue", "assertEquals", "assertNull", "assertNotNull", "assertThat",
-                    "Tales from the jar side", "Spring Boot", "Spring Framework", "Spring Data", "Spring Security"));
+	public static final String WORD_LIST = String.join(", ",
+			List.of("Kousen", "GPT-3", "GPT-4", "DALL-E", "Midjourney", "AssertJ", "Mockito", "JUnit", "Java", "Kotlin",
+					"Groovy", "Scala", "IOException", "RuntimeException", "UncheckedIOException",
+					"UnsupportedAudioFileException", "assertThrows", "assertTrue", "assertEquals", "assertNull",
+					"assertNotNull", "assertThat", "Tales from the jar side", "Spring Boot", "Spring Framework",
+					"Spring Data", "Spring Security"));
 
+	private final WhisperClient client;
 
-    private final WhisperClient client;
+	@Override
+	public String transcribe(String fileName) {
+		log.info("Transcribing {}", fileName);
+		File file = new File(fileName);
 
-    @Override
-    public String transcribe(String fileName) {
-        log.info("Transcribing {}", fileName);
-        File file = new File(fileName);
+		// Collect the transcriptions of each chunk
+		List<String> transcriptions = new ArrayList<>();
 
-        // Collect the transcriptions of each chunk
-        List<String> transcriptions = new ArrayList<>();
+		// First prompt is the word list
+		String prompt = WORD_LIST;
 
-        // First prompt is the word list
-        String prompt = WORD_LIST;
+		if (file.length() <= MAX_ALLOWED_SIZE) {
+			String transcription = client.transcribeChunk(prompt, file);
+			transcriptions = List.of(transcription);
+		} else {
+			var splitter = new WavFileSplitter();
+			List<File> chunks = splitter.splitWavFileIntoChunks(file);
+			for (File chunk : chunks) {
+				// Subsequent prompts are the previous transcriptions
+				String transcription = client.transcribeChunk(prompt, chunk);
+				transcriptions.add(transcription);
+				prompt = transcription;
 
-        if (file.length() <= MAX_ALLOWED_SIZE) {
-            String transcription = client.transcribeChunk(prompt, file);
-            transcriptions = List.of(transcription);
-        } else {
-            var splitter = new WavFileSplitter();
-            List<File> chunks = splitter.splitWavFileIntoChunks(file);
-            for (File chunk : chunks) {
-                // Subsequent prompts are the previous transcriptions
-                String transcription = client.transcribeChunk(prompt, chunk);
-                transcriptions.add(transcription);
-                prompt = transcription;
+				// After transcribing, no longer need the chunk
+				if (!chunk.delete()) {
+					log.info("Failed to delete {}", chunk.getName());
+				}
+			}
+		}
 
-                // After transcribing, no longer need the chunk
-                if (!chunk.delete()) {
-                    log.info("Failed to delete {}", chunk.getName());
-                }
-            }
-        }
-
-        // Join the individual transcripts and write to a file
-        String transcription = String.join(" ", transcriptions);
-        String fileNameWithoutPath = fileName.substring(
-                fileName.lastIndexOf("/") + 1);
-        FileUtils.writeTextToFile(transcription,
-                fileNameWithoutPath.replace(".wav", ".txt"));
-        return transcription;
-    }
+		// Join the individual transcripts and write to a file
+		String transcription = String.join(" ", transcriptions);
+		String fileNameWithoutPath = fileName.substring(fileName.lastIndexOf("/") + 1);
+		FileUtils.writeTextToFile(transcription, fileNameWithoutPath.replace(".wav", ".txt"));
+		return transcription;
+	}
 
 
     @Override
@@ -93,49 +91,41 @@ public class WhisperAdapter implements TranscriberOutput {
         log.info("UglyWhisperAdapter.transcribe");
         String transcription = "";
 
-        // First prompt is the word list
-        String prompt = WORD_LIST;
+		// First prompt is the word list
+		String prompt = WORD_LIST;
 
-        transcription = client.transcribeChunk(prompt, contentStream);
+		transcription = client.transcribeChunk(prompt, contentStream);
 
         return transcription;
     }
 
-    @Override
-    public String transcribe(File file) {
-        String fileName = file.getName();
-//        FileUtils.createTranscriptFile(fileName);
+	@Override
+	public Transcription transcribe(File file) {
+		// Collect the transcriptions of each chunk
+		List<String> transcriptions = new ArrayList<>();
 
-        // Collect the transcriptions of each chunk
-        List<String> transcriptions = new ArrayList<>();
+		// First prompt is the word list
+		String prompt = WORD_LIST;
 
-        // First prompt is the word list
-        String prompt = WORD_LIST;
+		if (file.length() <= MAX_ALLOWED_SIZE) {
+			String transcription = client.transcribeChunk(prompt, file);
+			transcriptions = List.of(transcription);
+		} else {
+			List<File> chunks = FileUtils.splitIntoChunks(file);
+			for (File chunk : chunks) {
+				// Subsequent prompts are the previous transcriptions
+				String transcription = client.transcribeChunk(prompt, chunk);
+				transcriptions.add(transcription);
+				// After transcribing, no longer need the chunk
+				if (!chunk.delete()) {
+					log.error("Failed to delete {}", chunk.getName());
+				}
+			}
+		}
 
-        if (file.length() <= MAX_ALLOWED_SIZE) {
-            String transcription = client.transcribeChunk(prompt, file);
-            transcriptions = List.of(transcription);
-        } else {
-            var splitter = new WavFileSplitter();
-            List<File> chunks = splitter.splitWavFileIntoChunks(file);
-            for (File chunk : chunks) {
-                // Subsequent prompts are the previous transcriptions
-                String transcription = client.transcribeChunk(prompt, chunk);
-                transcriptions.add(transcription);
-                prompt = transcription;
-                // After transcribing, no longer need the chunk
-                if (!chunk.delete()) {
-                    log.error("Failed to delete {}", chunk.getName());
-                }
-            }
-        }
+		// Join the individual transcripts and write to a file
+		String transcriptionText = String.join(" ", transcriptions);
 
-        // Join the individual transcripts and write to a file
-        String transcription = String.join(" ", transcriptions);
-        String fileNameWithoutPath = fileName.substring(
-                fileName.lastIndexOf("/") + 1);
-        FileUtils.writeTextToFile(transcription,
-                fileNameWithoutPath.replace(".wav", ".txt"));
-        return transcription;
-    }
+		return new Transcription(file, transcriptionText);
+	}
 }
