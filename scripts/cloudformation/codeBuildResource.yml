@@ -1,3 +1,6 @@
+# todo: merge with ec2Instance.yml
+# Prérequis : variable d'environnement 'GH_AWS_PAT' contenant le Public Access Token (Github)
+
 # Usage :
 ##$ aws cloudformation create-stack
 ## --stack-name someStack
@@ -17,7 +20,7 @@ Parameters:
   GithubRepo:
     Type: String
     Description: Github repository to build
-    Default: https://github.com/NaoufalElmeskini/aws-ec2-spring-api-ex.git
+    Default: https://github.com/NaoufalElmeskini/ia-transcriber.git
   GithubPAT:
     Type: String
     Description: github PAT to access source repository
@@ -66,7 +69,11 @@ Resources:
           - - Type: EVENT
               Pattern: PUSH
             - Type: HEAD_REF
-              Pattern: ^refs/heads/main
+              Pattern: ^refs/heads/main$
+          - - Type: EVENT
+              Pattern: PUSH
+            - Type: HEAD_REF
+              Pattern: ^refs/heads/feat/.*
       Cache:
         Type: NO_CACHE
       Tags:
