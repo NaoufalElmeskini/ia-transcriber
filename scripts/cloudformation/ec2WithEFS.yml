@@ -29,7 +29,7 @@ Resources:
       SecurityGroups:
         - !Ref EFSSecurityGroup
         - !Ref InstanceSecurityGroup
-
+  #              fixme: vulnérabilité (0.0.0.0/0)
   EFSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:

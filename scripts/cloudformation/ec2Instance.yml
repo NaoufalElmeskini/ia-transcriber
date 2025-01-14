@@ -12,7 +12,6 @@ Parameters:
     Description: Security Group Description
     Type: String
 
-
 Resources:
   MyInstance:
     Type: AWS::EC2::Instance
