@@ -37,6 +37,7 @@ Resources:
     DependsOn: MyInstance
 
   # our EC2 security group
+  #              fixme: vulnérabilité (0.0.0.0/0)
   SSHSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -48,6 +49,7 @@ Resources:
           ToPort: 22
 
   # our second EC2 security group
+  #              fixme: vulnérabilité (0.0.0.0/0)
   ServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:

@@ -81,6 +81,7 @@ Resources:
             Effect: Allow
             Principal:
               Service: codebuild.amazonaws.com
+#              fixme: vulnérabilité (*)
       Policies:
         - PolicyName: CodeBuildAccess
           PolicyDocument:
