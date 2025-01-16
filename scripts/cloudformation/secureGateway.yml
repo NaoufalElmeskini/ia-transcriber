@@ -1,9 +1,9 @@
 #usage :
 # aws cloudformation create-stack
-# --stack-name gatewayStack --template-body file://C:\path_to_parent\gatewayWithSimpleEc2.yml.yml
+# --stack-name gatewayStack --template-body file://C:\path_to_parent\secureGateway.yml
 # --parameters ParameterKey=KeyName,ParameterValue=${encryptionKeyName}
+# --capabilities CAPABILITY_IAM
 ---
-
 Parameters:
   KeyName:
     Description: Security Group Description
@@ -61,13 +61,78 @@ Resources:
           ToPort: 22
           CidrIp: 192.168.1.1/32
 
+##############################################################
+## Cognito
+#############
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UsernameConfiguration:
+        CaseSensitive: false
+      AutoVerifiedAttributes:
+        - email
+      UserPoolName: autoCup
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+    #        - Name: name
+    #          AttributeDataType: String
+    #          Mutable: true
+    #          Required: true
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: MyUserPoolClient
+      GenerateSecret: true
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_USER_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      SupportedIdentityProviders:
+        - COGNITO
+
+##############################################################
+  # Define a role which will allow the API to send logs to CloudWatch
+  ApiLoggingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Allows the API to log errors to CloudWatch Logs
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+
+
+  MyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join
+        - '-'
+        - - !Ref MyRestApi
+          - access-logs
+
+##############################################################
+## Gateway
+#############
   MyRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
       EndpointConfiguration:
         Types:
           - REGIONAL
-      Name: demo-public-api
+      Name: demo-secure-api
   AnyMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -76,7 +141,8 @@ Resources:
         - MyRestApi
         - RootResourceId
       HttpMethod: ANY
-      AuthorizationType: NONE
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CogAuthorizer
       Integration:
         Type: HTTP_PROXY
         Uri: !Sub "http://${MyInstance.PublicIp}:80"
@@ -110,32 +176,18 @@ Resources:
         DestinationArn: !GetAtt MyLogGroup.Arn
         Format: $context.extendedRequestId $context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId
 
-  # Define a role which will allow the API to send logs to CloudWatch
-  ApiLoggingRole:
-    Type: AWS::IAM::Role
-    Properties:
-      Description: Allows the API to log errors to CloudWatch Logs
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - apigateway.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: "/"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
   ApiGatewayAccount:
     Type: AWS::ApiGateway::Account
     Properties:
       CloudWatchRoleArn: !GetAtt ApiLoggingRole.Arn
 
-  MyLogGroup:
-    Type: AWS::Logs::LogGroup
+  CogAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
     Properties:
-      LogGroupName: !Join
-        - '-'
-        - - !Ref MyRestApi
-          - access-logs
+      Name: CognitoAuthorizer
+      RestApiId:
+        Ref: MyRestApi
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      ProviderARNs:
+        - !GetAtt UserPool.Arn
