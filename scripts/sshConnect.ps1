@@ -4,7 +4,7 @@
 
 ####################################
 # key format: encryption keys in this project are in different formats: some script use '.ppk' and others '.pem'.
-# a simple conversion is necessary to create one from an other (probably .pem to .ppk)
+# a simple conversion is necessary to create one from an other (probably .ppk to .pem)
 ####################################
 param(
     [string]$pemCertificate,

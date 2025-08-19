@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>io.lacrobate.ia</groupId>
-	<artifactId>aws-ec2-spring-api</artifactId>
+	<artifactId>ia-transcriber</artifactId>
 	<version>0.1</version>
 	<name>ia-transcriber-api</name>
 	<description>Learning project for Spring Boot API with AWS and IA</description>
